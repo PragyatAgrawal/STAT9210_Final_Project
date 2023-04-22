@@ -1,7 +1,7 @@
 ---
-title: "STAT 9210 HW 1"
-author: "Pragyat (Prag) Agrawal"
-date: "2023-04-15"
+title: "STAT 9210 Final Project"
+author: "Pragyat (Prag) Agrawal and Sahil Kulkarni"
+date: "2023-04-25"
 output:
   pdf_document:
     number_sections: yes
@@ -36,10 +36,29 @@ pacman::p_load(plyr, tidyverse, dplyr, ggplot2, ggthemes, data.table, lubridate,
                GGally, RColorBrewer, ggsci, plotROC, usmap,
                plotly, ggpubr, vistime, pander, softImpute, sjmisc, sjPlot, stringr,
                hwwntest, lmtest, spelling, tseries, moments, fGarch, exactRankTests, FSA, psych,
-               lme4, lmerTest, nlme, car)
+               lme4, lmerTest, nlme, car, readxl)
 
 options(tinytex.verbose = TRUE)
 
 
 ```
+
+
+# Introduction
+
+Breathing practices are vital for humans as they influence how we feel and shape human behavior. But scientific evidence on breathing and its effect on mind-body connection have been limited. Structured breathing practices have their own share of benefits as they help with enhancing mood and reduce physiological arousal in humans. There have been several studies which have established this. We seek to study this same effect and replicate its result by applying the concepts we learned in class to find if long breathing exercises can help people reach mindfulness and reduce stress and anxiety. 
+
+# Study
+
+We looked into a study by Cell Reports Medicine which according to their website cell.com is "premium open-access journal from Cell Press publishing cutting-edge research in translational and clinical biomedical sciences that inform and influence human health and medicine."
+
+
+```{r}
+data = read_excel("BWPilot_CombinedData_20210803_fordryad_addvars_cleaned_noround2_v3.xlsx")
+head(data)
+```
+
+## Participants
+
+Throughout the study, 140 potential targets were consented but 114 were invited to participate in the study. There was some attrition because of pandemic related reasons or loss of contact with the target. According to the study, The general ease of following instructions and performing the interventions and subjective experience of the interventions were assessed by an optional debriefing questionnaire at the end of the study. 
 
