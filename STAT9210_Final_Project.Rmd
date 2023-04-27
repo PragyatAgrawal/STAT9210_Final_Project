@@ -422,3 +422,21 @@ pairwise.wilcox.test(slopes_rhrhrvRR_excludinglessthan8datapoints$slopeRR, slope
 ```
 ## Promis Z and acutestatepanas is not working as it has a file w another name. Random_z also not working
 
+## Some more graphs
+
+```{r}
+attach(filename)
+filename$`Sleep Score` <- as.numeric(filename$`Sleep Score`)
+filename$`Hours of Sleep` <- as.numeric(filename$`Hours of Sleep`)
+# create new variables with different names
+my_hours <- filename$`Hours of Sleep`
+my_score <- filename$`Sleep Score`
+
+# use the original variables with the `::` operator
+ggplot(filename, aes(x = my_hours, y = my_score)) + 
+  geom_point() + 
+  geom_smooth(method = lm, color = 'red', se = F) + 
+  ylim(NA, 100) + 
+  annotate("text",x=10,y=10,label=(paste0("slope==",coef(lm(filename$`Sleep Score`~filename$`Hours of Sleep`))[2])),parse=TRUE)
+```
+
