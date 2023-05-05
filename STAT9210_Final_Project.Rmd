@@ -95,7 +95,7 @@ summary(model)
 
 anova(model)
 ```
-```{r Trait_z}
+```{r Trait_z_1, include=FALSE}
 #Trait anxiety score analysis
 library('ggpubr')
 library(readxl)
@@ -144,6 +144,10 @@ for (i in 1:length(unique(filename$`ScrSubjectID`))){
     else {trait$Type[i]<- 'Breathwork'}
   
 }
+```
+
+```{r Trait_z_2}
+
 effect_trait <- as.numeric(trait$`Post Trait`) - as.numeric(trait$`Pre Trait`)
 
 trait['delta trait']<- effect_trait
@@ -261,7 +265,7 @@ t.test(traitmed$`delta trait`, y =traitbreath$`delta trait`,
 
 
 
-```{r SlopesRR}
+```{r SlopesRR_1, include=FALSE}
 library("ggpubr")
 library(readxl)
 
@@ -350,6 +354,10 @@ slopeprepanaspos<- slope[['coefficients']][['z$`Days from  Round1 Day1`']]
   colnames(slopes)<- c("subjectID", "slopeHRV", "slopeRHR", "slopeRR","slopedeltapanaspos","Group", "SleepScore", "SleepEfficiency", "HoursOfSleep", "slopeprestate", "slopeprepanaspos")
   
 }
+
+```
+
+```{r SlopesRR_2}
 
 #remove any empty columns
 

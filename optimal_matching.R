@@ -15,6 +15,7 @@
 #Preparing dataset
 library(readxl)
 library(dplyr)
+library(tidyverse)
 filename <- read_excel("BWPilot_CombinedData_20210803_fordryad_addvars_cleaned_noround2_v3.xlsx")
 filename[filename=='.'] <- NA
 data_set <- filename[, c(1,2,15,16,17,18,19,20)]
