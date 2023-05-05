@@ -440,3 +440,41 @@ ggplot(filename, aes(x = my_hours, y = my_score)) +
   annotate("text",x=10,y=10,label=(paste0("slope==",coef(lm(filename$`Sleep Score`~filename$`Hours of Sleep`))[2])),parse=TRUE)
 ```
 
+```{r}
+colnames(filename)
+```
+The experiment put the 114 participants to a breathing and meditation protocol and measured the affect of that on their state anxiety. Specifically, it measured positive affect (Positive And Negative Affect Schedule (PANAS)) and state anxiety (State-Trait Anxiety Inventory (STAI)) scores on each participant before and after the experiment. Mindfulness meditation and breathwork groups both experienced an increase in daily positive affect.
+
+```{r}
+library(ggplot2)
+library(tidyr)
+library(cowplot)
+
+variables <- filename[,4:9]
+variables <- apply(variables, 2, function(x) as.numeric(as.character(x)))
+variables <- variables[!apply(is.na(variables) | variables == "", 1, all),]
+variables_df <- as.data.frame(variables)
+
+group1 <- variables_df[, c(1, 2, 5)]
+group2 <- variables_df[, c(3, 4, 6)]
+
+group1_melted <- gather(group1, key = "variable", value = "value")
+group2_melted <- gather(group2, key = "variable", value = "value")
+
+p1 <- ggplot(group1_melted, aes(x = variable, y = value)) +
+  geom_boxplot(position = position_dodge(0.75)) +
+  xlab("") +
+  ylab("Group 1") + 
+  theme(axis.text.x = element_text(angle = 10))
+
+
+p2 <- ggplot(group2_melted, aes(x = variable, y = value)) +
+  geom_boxplot(position = position_dodge(0.75)) +
+  xlab("") +
+  ylab("Group 2")+ 
+  theme(axis.text.x = element_text(angle = 10))
+
+plot_grid(p1, p2, ncol = 2)
+
+```
+Looking at the results, we see the breathwork group had a notably higher increase in daily positive affect, a reduction in daily negative affect and a reduction in the state anxiety which is a good result.
