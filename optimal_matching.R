@@ -13,9 +13,9 @@
 #treatment effect
 #-------------------------------------------------------------------------------
 #Preparing dataset
+library(tidyverse)
 library(readxl)
 library(dplyr)
-library(tidyverse)
 filename <- read_excel("BWPilot_CombinedData_20210803_fordryad_addvars_cleaned_noround2_v3.xlsx")
 filename[filename=='.'] <- NA
 data_set <- filename[, c(1,2,15,16,17,18,19,20)]
@@ -24,6 +24,8 @@ data_set <- filename[, c(1,2,15,16,17,18,19,20)]
 data_set <- data_set %>% drop_na()
 
 data_set$`Days from  Round1 Day1` <- as.numeric(data_set$`Days from  Round1 Day1`)
+
+data_set <- data_set[-20 < data_set$`Days from  Round1 Day1`, ]
 
 data_set$RHR <- as.numeric(data_set$RHR)
 data_set$HRV <- as.numeric(data_set$HRV)
@@ -44,7 +46,6 @@ treatment <- c(rbind(a, t.sec))
 
 treatment <- treatment[-122]
 treatment <- treatment[-137]
-
 data_set <- data_set %>% 
   mutate(pos = `Days from  Round1 Day1`>0)
 
@@ -56,7 +57,39 @@ data_set_matching <- data.frame(data_set_matching, treatment)
 library(tidyverse)
 library(ggplot2)
 library(MASS)
+#-------------------------------------------------------------------------------
+smahal=
+  function(z,X){
+    X<-as.matrix(X)
+    n<-dim(X)[1]
+    rownames(X)<-1:n
+    k<-dim(X)[2]
+    m<-sum(z)
+    for (j in 1:k) X[,j]<-rank(X[,j])
+    cv<-cov(X)
+    vuntied<-var(1:n)
+    rat<-sqrt(vuntied/diag(cv))
+    cv<-diag(rat)%*%cv%*%diag(rat)
+    out<-matrix(NA,m,n-m)
+    Xc<-X[z==0,]
+    Xt<-X[z==1,]
+    9
+    rownames(out)<-rownames(X)[z==1]
+    colnames(out)<-rownames(X)[z==0]
+    icov<-ginv(cv)
+    for (i in 1:m) out[i,]<-mahalanobis(Xc,Xt[i,],icov,inverted=T)
+    out
+  }
 
+addcaliper=function(dmat,z,logitp,calipersd=.5,penalty=1000){
+  # Pooled within group standard devation
+  sd.logitp=sqrt((sd(logitp[z==1])^2+sd(logitp[z==0])^2)/2)
+  adif=abs(outer(logitp[z==1],logitp[z==0],"-"))
+  adif=(adif-(calipersd*sd.logitp))*(adif>(calipersd*sd.logitp))
+  dmat=dmat+adif*penalty
+  dmat
+}
+#-------------------------------------------------------------------------------
 subset <- data_set_matching[data_set_matching$treatment %in% c(0,1), ]  
 datatemp=subset
 
@@ -64,12 +97,17 @@ subset$Hours.of.Sleep
 subset$Sleep.Efficiency
 subset$Respiration.Rate
 
+subset$Days.from..Round1.Day1
+
+colnames(subset)[3] <- "days"
+
 #Score model
-propscore.model=glm(pos ~ RHR + HRV + Sleep.Score +
-                    Sleep.Efficiency + Respiration.Rate,
+propscore.model=glm(pos ~ RHR + HRV  +Sleep.Score+
+                     Respiration.Rate,
                     family=binomial,x=TRUE,y=TRUE,
                     data=subset)
 # #-----------------------------------------------------------------------------
+datatemp$outcome = datatemp$Sleep.Efficiency 
 datatemp$treated=propscore.model$y
 datatemp$treatment=datatemp$treated
 
@@ -107,42 +145,10 @@ if(no.treated.lack.overlap+no.control.lack.overlap>0){
 }
 rownames(datatemp)=seq(1,nrow(datatemp),1)
 
-smahal=
-  function(z,X){
-    X<-as.matrix(X)
-    n<-dim(X)[1]
-    rownames(X)<-1:n
-    k<-dim(X)[2]
-    m<-sum(z)
-    for (j in 1:k) X[,j]<-rank(X[,j])
-    cv<-cov(X)
-    vuntied<-var(1:n)
-    rat<-sqrt(vuntied/diag(cv))
-    cv<-diag(rat)%*%cv%*%diag(rat)
-    out<-matrix(NA,m,n-m)
-    Xc<-X[z==0,]
-    Xt<-X[z==1,]
-    9
-    rownames(out)<-rownames(X)[z==1]
-    colnames(out)<-rownames(X)[z==0]
-    icov<-ginv(cv)
-    for (i in 1:m) out[i,]<-mahalanobis(Xc,Xt[i,],icov,inverted=T)
-    out
-  }
-
-addcaliper=function(dmat,z,logitp,calipersd=.5,penalty=1000){
-  # Pooled within group standard devation
-  sd.logitp=sqrt((sd(logitp[z==1])^2+sd(logitp[z==0])^2)/2)
-  adif=abs(outer(logitp[z==1],logitp[z==0],"-"))
-  adif=(adif-(calipersd*sd.logitp))*(adif>(calipersd*sd.logitp))
-  dmat=dmat+adif*penalty
-  dmat
-}
-
 # Rank based Mahalanobis distance
 distmat=smahal(datatemp$treated,Xmatmahal)
 # Add caliper
-distmat=addcaliper(distmat,datatemp$treated,datatemp$logit.ps,calipersd=.5)
+distmat=addcaliper(distmat,datatemp$treated,datatemp$logit.ps,calipersd=0.5)
 # Label the rows and columns of the distance matrix by the rownames in datatemp
 rownames(distmat)=rownames(datatemp)[datatemp$treated==1]
 colnames(distmat)=rownames(datatemp)[datatemp$treated==0]
@@ -161,12 +167,7 @@ if(no.control.lack.overlap+no.treated.lack.overlap==0){
 if(no.control.lack.overlap+no.treated.lack.overlap>0){
   matchedset.index.numeric.full=c(matchedset.index.numeric,rep(0,no.control.lack.overlap+no.treated.lack.overlap))
 }
-# Calculate standardized difference before and after a full match
-# Calculate standardized difference before and after a full match
-# Drop observations with missing values from the calculations
-# stratum.myindex should contain strata for each subject, 0 means a unit was not
-# matched
-# Use harmonic mean weights
+
 standardized.diff.harmonic.func=function(x,treatment,stratum.myindex,missing=rep(0,length(x))){
   xtreated=x[treatment==1 & missing==0];
   xcontrol=x[treatment==0 & missing==0];
@@ -212,9 +213,7 @@ for(i in 1:ncol(Xmatmahal)){
   std.diff.before[i]=temp.stand.diff$std.diff.before.matching;
   std.diff.after[i]=temp.stand.diff$std.diff.after.matching;
 }
-# Rename std.diff.before and std.diff.after to shorter names sd.bf and sd.af
-# and use digits option to be able to columns of std.diff.before and
-# std.diff.after in one row
+
 sd.bf=std.diff.before
 sd.af=std.diff.after
 options(digits=2)
@@ -230,13 +229,13 @@ ggsave(
   filename = "l5.png",
   device = "png", width = 6, height = 4)
 
-# #Point estimate for optimal matching and Confidence interval.
-# reg.formula=update(propscore.model$formula,outcome~treated+matchvec+.)
-# matched.reg.model=lm(reg.formula,data=datatemp)
-# summary(matched.reg.model)
-# # Point estimate of treatment effect
-# coef(matched.reg.model)[2]
-# # Confidence interval
-# confint(matched.reg.model)[2,]
+#Point estimate for optimal matching and Confidence interval.
+reg.formula=update(propscore.model$formula,outcome~treated+matchvec+.)
+matched.reg.model=lm(reg.formula,data=datatemp)
+summary(matched.reg.model)
+# Point estimate of treatment effect
+coef(matched.reg.model)[2]
+# Confidence interval
+confint(matched.reg.model)[2,]
 
 
