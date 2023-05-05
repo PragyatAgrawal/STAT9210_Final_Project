@@ -64,7 +64,65 @@ head(filename)
 
 Throughout the study, 140 potential targets were consented but 114 were invited to participate in the study. There was some attrition because of pandemic related reasons or loss of contact with the target. According to the study, The general ease of following instructions and performing the interventions and subjective experience of the interventions were assessed by an optional debriefing questionnaire at the end of the study. 
 
+## Data Visualization
+
+```{r}
+attach(filename)
+filename$`Sleep Score` <- as.numeric(filename$`Sleep Score`)
+filename$`Hours of Sleep` <- as.numeric(filename$`Hours of Sleep`)
+# create new variables with different names
+my_hours <- filename$`Hours of Sleep`
+my_score <- filename$`Sleep Score`
+
+# use the original variables with the `::` operator
+ggplot(filename, aes(x = my_hours, y = my_score)) + 
+  geom_point() + 
+  geom_smooth(method = lm, color = 'red', se = F) + 
+  ylim(NA, 100) + 
+  annotate("text",x=10,y=10,label=(paste0("slope==",coef(lm(filename$`Sleep Score`~filename$`Hours of Sleep`))[2])),parse=TRUE)
+```
+This graphs shows that sleep score is positively related to the number of hours a person sleeps. This means a higher number of hours sleeping, corresponds to a higher sleep score. This makes sense as the quality of sleep increases with the quantity of sleep a person gets. 
+```{r}
+colnames(filename)
+```
+The experiment put the 114 participants to a breathing and meditation protocol and measured the affect of that on their state anxiety. Specifically, it measured positive affect (Positive And Negative Affect Schedule (PANAS)) and state anxiety (State-Trait Anxiety Inventory (STAI)) scores on each participant before and after the experiment. Mindfulness meditation and breathwork groups both experienced an increase in daily positive affect.
+
+```{r}
+library(ggplot2)
+library(tidyr)
+library(cowplot)
+
+variables <- filename[,4:9]
+variables <- apply(variables, 2, function(x) as.numeric(as.character(x)))
+variables <- variables[!apply(is.na(variables) | variables == "", 1, all),]
+variables_df <- as.data.frame(variables)
+
+group1 <- variables_df[, c(1, 2, 5)]
+group2 <- variables_df[, c(3, 4, 6)]
+
+group1_melted <- gather(group1, key = "variable", value = "value")
+group2_melted <- gather(group2, key = "variable", value = "value")
+
+p1 <- ggplot(group1_melted, aes(x = variable, y = value)) +
+  geom_boxplot(position = position_dodge(0.75)) +
+  xlab("") +
+  ylab("Group 1") + 
+  theme(axis.text.x = element_text(angle = 10))
+
+
+p2 <- ggplot(group2_melted, aes(x = variable, y = value)) +
+  geom_boxplot(position = position_dodge(0.75)) +
+  xlab("") +
+  ylab("Group 2")+ 
+  theme(axis.text.x = element_text(angle = 10))
+
+plot_grid(p1, p2, ncol = 2)
+
+```
+Looking at the results, we see the breathwork group had a notably higher increase in daily positive affect, a reduction in daily negative affect and a reduction in the state anxiety. All of these indicate that there is some positive effect because of the breathing and meditation protocol that has been assigned to the participants. This is proven by the regression which shows Mindful Meditation as a significant indicator for a reduction in anxiety and an increase in positive effect. 
+
 ## Box Study
+
 ```{r}
 library(readxl)
 library(lme4)
@@ -430,59 +488,4 @@ pairwise.wilcox.test(slopes_rhrhrvRR_excludinglessthan8datapoints$slopeRR, slope
 ```
 ## Promis Z and acutestatepanas is not working as it has a file w another name. Random_z also not working
 
-## Some more graphs
 
-```{r}
-attach(filename)
-filename$`Sleep Score` <- as.numeric(filename$`Sleep Score`)
-filename$`Hours of Sleep` <- as.numeric(filename$`Hours of Sleep`)
-# create new variables with different names
-my_hours <- filename$`Hours of Sleep`
-my_score <- filename$`Sleep Score`
-
-# use the original variables with the `::` operator
-ggplot(filename, aes(x = my_hours, y = my_score)) + 
-  geom_point() + 
-  geom_smooth(method = lm, color = 'red', se = F) + 
-  ylim(NA, 100) + 
-  annotate("text",x=10,y=10,label=(paste0("slope==",coef(lm(filename$`Sleep Score`~filename$`Hours of Sleep`))[2])),parse=TRUE)
-```
-
-```{r}
-colnames(filename)
-```
-The experiment put the 114 participants to a breathing and meditation protocol and measured the affect of that on their state anxiety. Specifically, it measured positive affect (Positive And Negative Affect Schedule (PANAS)) and state anxiety (State-Trait Anxiety Inventory (STAI)) scores on each participant before and after the experiment. Mindfulness meditation and breathwork groups both experienced an increase in daily positive affect.
-
-```{r}
-library(ggplot2)
-library(tidyr)
-library(cowplot)
-
-variables <- filename[,4:9]
-variables <- apply(variables, 2, function(x) as.numeric(as.character(x)))
-variables <- variables[!apply(is.na(variables) | variables == "", 1, all),]
-variables_df <- as.data.frame(variables)
-
-group1 <- variables_df[, c(1, 2, 5)]
-group2 <- variables_df[, c(3, 4, 6)]
-
-group1_melted <- gather(group1, key = "variable", value = "value")
-group2_melted <- gather(group2, key = "variable", value = "value")
-
-p1 <- ggplot(group1_melted, aes(x = variable, y = value)) +
-  geom_boxplot(position = position_dodge(0.75)) +
-  xlab("") +
-  ylab("Group 1") + 
-  theme(axis.text.x = element_text(angle = 10))
-
-
-p2 <- ggplot(group2_melted, aes(x = variable, y = value)) +
-  geom_boxplot(position = position_dodge(0.75)) +
-  xlab("") +
-  ylab("Group 2")+ 
-  theme(axis.text.x = element_text(angle = 10))
-
-plot_grid(p1, p2, ncol = 2)
-
-```
-Looking at the results, we see the breathwork group had a notably higher increase in daily positive affect, a reduction in daily negative affect and a reduction in the state anxiety which is a good result.
