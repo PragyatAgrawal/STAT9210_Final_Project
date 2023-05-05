@@ -159,6 +159,7 @@ summary(model)
 
 anova(model)
 ```
+
 ```{r Trait_z_1, include=FALSE}
 #Trait anxiety score analysis
 library('ggpubr')
