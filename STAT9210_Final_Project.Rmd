@@ -64,6 +64,11 @@ head(filename)
 
 Throughout the study, 140 potential targets were consented but 114 were invited to participate in the study. There was some attrition because of pandemic related reasons or loss of contact with the target. According to the study, The general ease of following instructions and performing the interventions and subjective experience of the interventions were assessed by an optional debriefing questionnaire at the end of the study. 
 
+## Treatment
+
+The experiment put the 114 participants to a breathing and meditation protocol and measured the affect of that on their state anxiety. Specifically, it measured positive affect (Positive And Negative Affect Schedule (PANAS)) and state anxiety (State-Trait Anxiety Inventory (STAI)) scores on each participant before and after the experiment. Mindfulness meditation and breathwork groups both experienced an increase in daily positive affect.
+
+
 ## Data Visualization
 
 ```{r}
@@ -82,10 +87,11 @@ ggplot(filename, aes(x = my_hours, y = my_score)) +
   annotate("text",x=10,y=10,label=(paste0("slope==",coef(lm(filename$`Sleep Score`~filename$`Hours of Sleep`))[2])),parse=TRUE)
 ```
 This graphs shows that sleep score is positively related to the number of hours a person sleeps. This means a higher number of hours sleeping, corresponds to a higher sleep score. This makes sense as the quality of sleep increases with the quantity of sleep a person gets. 
+
+
 ```{r}
 colnames(filename)
 ```
-The experiment put the 114 participants to a breathing and meditation protocol and measured the affect of that on their state anxiety. Specifically, it measured positive affect (Positive And Negative Affect Schedule (PANAS)) and state anxiety (State-Trait Anxiety Inventory (STAI)) scores on each participant before and after the experiment. Mindfulness meditation and breathwork groups both experienced an increase in daily positive affect.
 
 ```{r}
 library(ggplot2)
@@ -119,7 +125,7 @@ p2 <- ggplot(group2_melted, aes(x = variable, y = value)) +
 plot_grid(p1, p2, ncol = 2)
 
 ```
-Looking at the results, we see the breathwork group had a notably higher increase in daily positive affect, a reduction in daily negative affect and a reduction in the state anxiety. All of these indicate that there is some positive effect because of the breathing and meditation protocol that has been assigned to the participants. This is proven by the regression which shows Mindful Meditation as a significant indicator for a reduction in anxiety and an increase in positive effect. 
+Looking at the results, we see the breathwork group had a notably higher increase in daily positive affect, a reduction in daily negative affect and a reduction in the state anxiety. All of these indicate that there is some positive effect because of the breathing and meditation protocol that has been assigned to the participants. This is proven by the regression below which shows Mindful Meditation as a significant indicator for a reduction in anxiety and an increase in positive effect. 
 
 ## Box Study
 
@@ -317,6 +323,11 @@ t.test(traitmed$`delta trait`, y =traitbreath$`delta trait`,
 
 
 ```
+We have conducted Wilcoxin and Kruskal-Wallis rank sum test, whose output is above. The wilcoxin test for the super-oxygenation group is significant at the 0.10 level. The Kruskal-Wallis test is not significant which may indicate that there is no evidence that the medians of the pre and post groups are significantly different. However, it does not say that there are no differences in the groups. It may be the case that the differences are too small to be detected.
+
+The paired t-test for pre and post traitbreath shows that the difference in factor is significant. 
+
+This graphs shows the before and after trait anxiety. This graph doesn't show this clearly, but it seems that there is a reduction in before and after state anxiety. We have to do further analysis to prove this.
 
 
 
@@ -486,6 +497,3 @@ pairwise.wilcox.test(slopes_rhrhrvRR_excludinglessthan8datapoints$slopeRR, slope
   # write_csv(slopes, 'slopes_rhrhrvRR_excludinglessthan8datapoints.csv')
   # 
 ```
-## Promis Z and acutestatepanas is not working as it has a file w another name. Random_z also not working
-
-
